@@ -1,0 +1,2 @@
+export type ParsedDish={name:string;price:number;category:string;emoji:string;is_veg:boolean};
+export function parseMenuLine(line:string,category='Snacks'):ParsedDish|null{const clean=line.replace(/\.\.\.|[-–—]/g,' ').replace(/₹|rs\.?/ig,' ').trim();const m=clean.match(/^(.*?)[\s]+(\d+(?:\.\d{1,2})?)\s*$/);if(!m)return null;return{name:m[1].trim(),price:Number(m[2]),category,emoji:'🍽️',is_veg:true}}

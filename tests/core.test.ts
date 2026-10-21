@@ -1,0 +1,2 @@
+import {describe,it,expect} from 'vitest'; import {emojiFor} from '../lib/emoji'; import {parseMenuLine} from '../lib/parser'; import {spotsLeft} from '../lib/slots';
+describe('QuickBite rules',()=>{it('matches food',()=>expect(emojiFor('Masala Dosa')).toBe('🥞'));it('parses prices',()=>expect(parseMenuLine('Vada Pav - Rs. 20')?.price).toBe(20));it('ignores rejected orders',()=>expect(spotsLeft(2,[{slot_time:'12:00 PM',status:'rejected'},{slot_time:'12:00 PM',status:'submitted'}],'12:00 PM')).toBe(1))});

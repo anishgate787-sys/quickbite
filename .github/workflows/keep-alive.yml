@@ -1,0 +1,9 @@
+name: QuickBite keep alive
+on:
+  schedule: [{cron: '0 4 */3 * *'}]
+  workflow_dispatch:
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - run: curl -fsS "${{ secrets.QUICKBITE_URL }}/api/keep-alive"

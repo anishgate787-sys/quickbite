@@ -1,0 +1,21 @@
+name,price,image,category,veg
+Vada Pav,20,https://loremflickr.com/900/600/vada-pav-food?lock=101,Snacks,veg
+Samosa,15,https://loremflickr.com/900/600/samosa-food?lock=102,Snacks,veg
+Pav Bhaji,70,https://loremflickr.com/900/600/pav-bhaji-food?lock=103,Meals,veg
+Misal Pav,50,https://loremflickr.com/900/600/misal-pav-food?lock=104,Meals,veg
+Veg Biryani,80,https://loremflickr.com/900/600/vegetable-biryani-food?lock=105,Meals,veg
+Chicken Biryani,120,https://loremflickr.com/900/600/chicken-biryani-food?lock=106,Meals,non-veg
+Masala Dosa,60,https://loremflickr.com/900/600/masala-dosa-food?lock=107,Meals,veg
+Idli Sambar,45,https://loremflickr.com/900/600/idli-sambar-food?lock=108,Breakfast,veg
+Masala Uttapam,65,https://loremflickr.com/900/600/uttapam-food?lock=109,Breakfast,veg
+Poha,30,https://loremflickr.com/900/600/poha-food?lock=110,Breakfast,veg
+Aloo Paratha,55,https://loremflickr.com/900/600/aloo-paratha-food?lock=111,Breakfast,veg
+Paneer Frankie,90,https://loremflickr.com/900/600/paneer-frankie-food?lock=112,Snacks,veg
+Cheese Sandwich,60,https://loremflickr.com/900/600/cheese-sandwich-food?lock=113,Snacks,veg
+Veg Burger,75,https://loremflickr.com/900/600/vegetable-burger-food?lock=114,Snacks,veg
+French Fries,55,https://loremflickr.com/900/600/french-fries-food?lock=115,Snacks,veg
+Masala Maggi,35,https://loremflickr.com/900/600/masala-noodles-food?lock=116,Snacks,veg
+Masala Chai,10,https://loremflickr.com/900/600/masala-chai-tea?lock=117,Drinks,veg
+Cold Coffee,40,https://loremflickr.com/900/600/cold-coffee-drink?lock=118,Drinks,veg
+Mango Lassi,50,https://loremflickr.com/900/600/mango-lassi-drink?lock=119,Drinks,veg
+Gulab Jamun,40,https://loremflickr.com/900/600/gulab-jamun-dessert?lock=120,Desserts,veg

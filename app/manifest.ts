@@ -1,0 +1,1 @@
+import type {MetadataRoute} from 'next'; export default function manifest():MetadataRoute.Manifest{return{name:'QuickBite',short_name:'QuickBite',start_url:'/',display:'standalone',background_color:'#121318',theme_color:'#ff5e3a',icons:[]}}
