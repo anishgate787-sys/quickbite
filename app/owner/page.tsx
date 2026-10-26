@@ -1,10 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { emojiFor } from '@/lib/emoji';
+import { buildSalesAnalytics } from '@/lib/sales';
 
 type Product = { id: number; name: string; price: number; category: string; image: string; is_veg: number };
-type Order = { id: number; token: number; student_name?: string; items: string; total: number; slot_time: string; status: string };
+type Order = { id: number; token: number; student_name?: string; items: string; total: number; slot_time: string; status: string; created_at?: string };
 type QueueEntry = { id: number; label: string; position: number; status: string };
 
 const statuses = ['submitted', 'preparing', 'ready', 'completed', 'cancelled'];
@@ -22,6 +23,7 @@ export default function OwnerPage() {
   const [queueLabel, setQueueLabel] = useState('');
   const [notice, setNotice] = useState('');
   const [pendingStatuses, setPendingStatuses] = useState<Record<number, string>>({});
+  const sales = useMemo(() => buildSalesAnalytics(orders), [orders]);
 
   async function loadProducts() { const response = await fetch('/api/menu', { cache: 'no-store' }); if (response.ok) setProducts((await response.json()).items || []); }
   async function loadOrders() { const response = await fetch('/api/orders', { cache: 'no-store' }); if (response.ok) setOrders((await response.json()).orders || []); }
@@ -51,8 +53,117 @@ export default function OwnerPage() {
 
   return <main className="min-h-screen bg-[#0d0e13] px-4 py-8 text-white sm:px-8">
     <div className="mx-auto max-w-7xl">
-      <header className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><a href="/" className="logo text-xl">Quick<span className="gradient">Bite</span></a><p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-[#ff8a72]">Canteen dashboard</p><h1 className="mt-2 text-4xl font-black">Operations deck</h1><p className="mt-2 text-[#aa8982]">Manage menu, canteen orders, and the separate mess queue.</p></div><a href="/" className="rounded-xl bg-white/10 px-4 py-3 text-sm font-bold">Student view</a></header>
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-4"><div><a href="/" className="logo text-xl">Quick<span className="gradient">Bite</span></a><p className="mt-6 text-sm font-bold uppercase tracking-[0.2em] text-[#ff8a72]">Canteen dashboard</p><h1 className="mt-2 text-4xl font-black">Operations deck</h1><p className="mt-2 text-[#aa8982]">Manage menu, canteen orders, and the separate mess queue.</p></div><div className="flex items-center gap-3"><a href="/owner/sales" className="rounded-xl bg-[#ff5e3a] px-4 py-3 text-sm font-bold">Sales report</a><a href="/" className="rounded-xl bg-white/10 px-4 py-3 text-sm font-bold">Student view</a></div></header>
       {notice && <div className="mb-5 rounded-xl border border-[#ff5e3a]/30 bg-[#ff5e3a]/10 px-4 py-3 text-sm text-[#ffb4a3]">{notice}</div>}
+
+      <section className="glass mb-6 overflow-hidden p-6">
+        <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-[0.22em] text-[#ff8a72]">Sales report</p>
+            <h2 className="mt-1 text-3xl font-black">Performance analytics</h2>
+          </div>
+          <div className="rounded-full border border-white/10 bg-white/5 px-3 py-2 text-xs uppercase tracking-[0.2em] text-[#aa8982]">
+            {orders.length === 0 ? 'Sample preview' : `${orders.length} orders tracked`}
+          </div>
+        </div>
+
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {[{ label: 'Revenue', value: `₹${sales.totalRevenue.toFixed(0)}`, detail: 'Gross sales', accent: 'from-[#ff5e3a] to-[#ff9a6b]' }, { label: 'Avg order', value: `₹${sales.averageOrderValue.toFixed(0)}`, detail: 'Per order value', accent: 'from-[#e1037d] to-[#ff66c4]' }, { label: 'Today', value: `₹${sales.todaysRevenue.toFixed(0)}`, detail: `${sales.todaysOrders} orders`, accent: 'from-[#9647ff] to-[#b88cff]' }, { label: 'Completed', value: `₹${sales.completedRevenue.toFixed(0)}`, detail: `${sales.salesByStatus.completed ?? 0} fulfilled`, accent: 'from-[#11b981] to-[#50f1b8]' }].map((card) => (
+            <div key={card.label} className="rounded-2xl border border-white/10 bg-[#14161d] p-4">
+              <div className={`mb-3 h-1.5 rounded-full bg-gradient-to-r ${card.accent}`} />
+              <p className="text-xs uppercase tracking-[0.18em] text-[#aa8982]">{card.label}</p>
+              <p className="mt-3 text-3xl font-black">{card.value}</p>
+              <p className="mt-1 text-sm text-[#aa8982]">{card.detail}</p>
+            </div>
+          ))}
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.3fr_0.7fr]">
+          <div className="rounded-2xl border border-white/10 bg-[#14161d] p-4">
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold">Weekly revenue trend</h3>
+              <span className="text-xs uppercase tracking-[0.18em] text-[#aa8982]">Last 7 days</span>
+            </div>
+            <div className="flex h-40 items-end gap-3">
+              {sales.salesTrend.map((point) => {
+                const maxRevenue = Math.max(...sales.salesTrend.map((item) => item.revenue), 1);
+                const height = `${Math.max(10, (point.revenue / maxRevenue) * 100)}%`;
+                return (
+                  <div key={point.label} className="flex flex-1 flex-col items-center justify-end gap-2">
+                    <div className="flex w-full items-end justify-center rounded-t-2xl bg-gradient-to-t from-[#ff5e3a] via-[#ff8571] to-[#ffc2ab]" style={{ height }} />
+                    <span className="text-[10px] text-[#aa8982]">{point.label.split(' ')[0]}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-[#14161d] p-4">
+            <h3 className="text-xl font-bold">Order mix</h3>
+            <div className="mt-4 space-y-4">
+              {Object.entries(sales.salesByStatus).map(([status, count]) => {
+                const total = sales.totalOrders || 1;
+                const width = `${(count / total) * 100}%`;
+                return (
+                  <div key={status}>
+                    <div className="mb-1 flex items-center justify-between text-sm">
+                      <span className="capitalize text-[#aa8982]">{status}</span>
+                      <span className="font-bold text-white">{count}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-white/5">
+                      <div className="h-2 rounded-full bg-gradient-to-r from-[#ff5e3a] to-[#e1037d]" style={{ width }} />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="mt-5 rounded-xl border border-[#ff8a72]/30 bg-[#ff5e3a]/10 p-3 text-sm text-[#ffd8cf]">
+              Peak slot: <span className="font-bold text-white">{sales.peakSlot}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="rounded-2xl border border-white/10 bg-[#14161d] p-4">
+            <h3 className="text-xl font-bold">Top selling items</h3>
+            <div className="mt-4 space-y-3">
+              {sales.topProducts.map((item, index) => (
+                <div key={item.name} className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 p-3">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-gradient-to-br from-[#ff5e3a] to-[#e1037d] text-sm font-black text-white">{index + 1}</div>
+                    <div>
+                      <p className="font-bold">{item.name}</p>
+                      <p className="text-xs text-[#aa8982]">{item.quantity} sold</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-[#ffb4a3]">₹{item.revenue.toFixed(0)}</p>
+                    <p className="text-xs text-[#aa8982]">{item.share.toFixed(0)}% share</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-[#14161d] p-4">
+            <h3 className="text-xl font-bold">Quick insight</h3>
+            <div className="mt-4 space-y-3 text-sm text-[#d8d1d4]">
+              <div className="rounded-xl bg-white/5 p-3">
+                <span className="text-[#aa8982]">Best performer</span>
+                <p className="mt-1 text-lg font-bold text-white">{sales.topProducts[0]?.name ?? 'No sales yet'}</p>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3">
+                <span className="text-[#aa8982]">Today&apos;s sales</span>
+                <p className="mt-1 text-lg font-bold text-white">₹{sales.todaysRevenue.toFixed(0)}</p>
+              </div>
+              <div className="rounded-xl bg-white/5 p-3">
+                <span className="text-[#aa8982]">Orders in queue</span>
+                <p className="mt-1 text-lg font-bold text-white">{Math.max(0, (sales.salesByStatus.submitted ?? 0) + (sales.salesByStatus.preparing ?? 0))}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       <div className="grid gap-6 xl:grid-cols-[1fr_1.25fr]">
         <section className="glass p-6"><div className="mb-5 flex items-center justify-between"><div><p className="text-xs font-bold uppercase tracking-widest text-[#ff8a72]">Menu control</p><h2 className="mt-1 text-2xl font-bold">{editingId ? 'Edit product' : 'Add product'}</h2></div>{editingId && <button onClick={clearForm} className="text-sm text-[#ff8a72]">Cancel</button>}</div>
